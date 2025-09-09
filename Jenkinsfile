@@ -10,7 +10,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t dewixaltius/jenki-demo .'
+                sh 'docker build -t dewixaltius/jenkins-demo .'
             }
         }
 
@@ -18,7 +18,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                     sh 'docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%'
-                    sh 'docker push dewixaltius/github-demo'
+                    sh 'docker push dewixaltius/jenkins-demo'
                 }
             }
         }
