@@ -1,21 +1,49 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_CMD = '/opt/homebrew/bin/docker'
+    }
+
     stages {
+        stage('Clean Docker Auth') {
+            steps {
+                sh '''
+                    echo "=== Current Docker login status ==="
+                    $DOCKER_CMD info | grep -i username || true
+                    echo "=== Logging out from Docker ==="
+                    $DOCKER_CMD logout || true
+                    echo "=== Checking Docker config ==="
+                    ls -la ~/.docker/ || true
+                    echo "=== Clean complete ==="
+                '''
+            }
+        }
+
         stage('Verify') {
             steps {
                 sh 'ls -la'
             }
         }
 
-        stage('Build and Push Docker Image') {
+        stage('Build Docker Image') {
             steps {
-                script {
-                    // Use Docker Pipeline plugin
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
-                        def customImage = docker.build("${env.DOCKER_USERNAME}/jenkins-demo", "--no-cache .")
-                        customImage.push()
-                    }
+                sh '''
+                    echo "=== Building Docker image ==="
+                    $DOCKER_CMD build --no-cache -t wwwayyy/jenkins-demo .
+                '''
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                    sh '''
+                        echo "=== Logging into Docker Hub ==="
+                        echo $DOCKER_PASSWORD | $DOCKER_CMD login -u $DOCKER_USERNAME --password-stdin
+                        echo "=== Pushing image ==="
+                        $DOCKER_CMD push wwwayyy/jenkins-demo
+                    '''
                 }
             }
         }
@@ -23,7 +51,7 @@ pipeline {
 
     post {
         always {
-            sh 'docker logout || true'
+            sh '$DOCKER_CMD logout || true'
         }
     }
 }
