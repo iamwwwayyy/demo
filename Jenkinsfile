@@ -2,6 +2,12 @@ pipeline {
     agent any
 
     stages {
+        stage('Clean Docker Auth') {
+            steps {
+                sh 'docker logout || true'  // Force logout, ignore if not logged in
+            }
+        }
+
         stage('Verify') {
             steps {
                 sh 'ls'
