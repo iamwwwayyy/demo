@@ -3,9 +3,21 @@ pipeline {
 
     environment {
         DOCKER_CMD = '/opt/homebrew/bin/docker'
+        DOCKER_HOST = 'unix:///Users/w/Library/Containers/com.docker.docker/Data/docker.sock'
     }
 
     stages {
+        stage('Test Docker Connection') {
+            steps {
+                sh '''
+                    echo "=== Testing Docker connection ==="
+                    $DOCKER_CMD info || true
+                    echo "=== Docker contexts ==="
+                    $DOCKER_CMD context ls
+                '''
+            }
+        }
+
         stage('Clean Docker Auth') {
             steps {
                 sh '''
@@ -13,8 +25,6 @@ pipeline {
                     $DOCKER_CMD info | grep -i username || true
                     echo "=== Logging out from Docker ==="
                     $DOCKER_CMD logout || true
-                    echo "=== Checking Docker config ==="
-                    ls -la ~/.docker/ || true
                     echo "=== Clean complete ==="
                 '''
             }
