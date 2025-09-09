@@ -3,17 +3,16 @@ pipeline {
 
     environment {
         DOCKER_CMD = '/opt/homebrew/bin/docker'
-        DOCKER_HOST = 'unix:///Users/w/Library/Containers/com.docker.docker/Data/docker.sock'
     }
 
     stages {
-        stage('Test Docker Connection') {
+        stage('Setup Docker Context') {
             steps {
                 sh '''
+                    echo "=== Switching to desktop-linux context ==="
+                    $DOCKER_CMD context use desktop-linux
                     echo "=== Testing Docker connection ==="
-                    $DOCKER_CMD info || true
-                    echo "=== Docker contexts ==="
-                    $DOCKER_CMD context ls
+                    $DOCKER_CMD info
                 '''
             }
         }
