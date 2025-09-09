@@ -4,8 +4,22 @@ pipeline {
     stages {
         stage('Verify') {
             steps {
-                // This command lists the files to verify they were checked out correctly
-                sh 'ls -al'
+                sh 'ls'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t dewixaltius/jenki-demo .'
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                    sh 'docker login -u %DOCKER_USERNAME% -p %DOCKER_PASSWORD%'
+                    sh 'docker push dewixaltius/github-demo'
+                }
             }
         }
     }
